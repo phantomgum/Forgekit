@@ -1,4 +1,4 @@
-# Forgekit
+# TrendGenie
 
 AI-powered project ideas built from what's actually trending in tech right now.
 
@@ -6,7 +6,7 @@ AI-powered project ideas built from what's actually trending in tech right now.
 
 ## What it does
 
-Forgekit has two modes:
+TrendGenie has two modes:
 
 **Discovery** — Scrapes GitHub trending and Hacker News in real time, feeds that context to Claude, and generates three creative project ideas based on what's genuinely hot right now. Refresh anytime to get a fresh set grounded in the current moment.
 
@@ -20,7 +20,7 @@ Both modes stream responses character by character so ideas appear as they're ge
 
 I kept seeing people on the internet building impressive things with the latest tools and feeling behind. Reading newsletters and following the news wasn't enough — I needed something that bridged the gap between knowing about a technology and actually building with it.
 
-Forgekit is that bridge. It turns trending tech into concrete things to build.
+TrendGenie is that bridge. It turns trending tech into concrete things to build.
 
 ---
 
@@ -66,8 +66,8 @@ This is practical RAG — no vector database, just real-time retrieval of what's
 ### Installation
 
 ```bash
-git clone https://github.com/phantomgum/forgekit
-cd forgekit
+git clone https://github.com/phantomgum/TrendGenie
+cd TrendGenie
 pip install -r requirements.txt
 ```
 
@@ -90,7 +90,7 @@ Open `index.html` in your browser or serve it locally.
 ## Project structure
 
 ```
-forgekit/
+TrendGenie/
 ├── main.py          # FastAPI server, endpoints, Anthropic API calls
 ├── index.html       # Frontend — single file, vanilla JS
 ├── requirements.txt
