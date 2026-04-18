@@ -224,8 +224,70 @@
         }
 
         @keyframes fadeInTab {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading Skeleton */
+        .skeleton {
+            animation: pulse-skel 1.5s infinite ease-in-out;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .skeleton-title {
+            height: 32px;
+            width: 60%;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .skeleton-tagline {
+            height: 22px;
+            width: 85%;
+            margin-bottom: 2.5rem;
+        }
+
+        .skeleton-body {
+            height: 16px;
+            width: 100%;
+            margin-bottom: 0.75rem;
+        }
+
+        .skeleton-body.short {
+            width: 40%;
+        }
+
+        .skeleton-category {
+            margin-top: 2rem;
+        }
+
+        .skeleton-category-title {
+            height: 12px;
+            width: 30%;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes pulse-skel {
+            0% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 0.6;
+            }
         }
     </style>
 </head>
@@ -246,13 +308,15 @@
         <div id="discoverTab" class="tab-content active">
             <section id="discoverySection" style="margin-bottom: 4rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                    <h2 style="margin: 0; background: linear-gradient(to right, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Discover what to build</h2>
+                    <h2
+                        style="margin: 0; background: linear-gradient(to right, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        Discover what to build</h2>
                     <button id="refreshDiscoverBtn" type="button">Refresh ideas</button>
                 </div>
-    
+
                 <div class="loader" id="discoverLoader"></div>
                 <div class="error" id="discoverErrorMsg"></div>
-    
+
                 <div class="discover-grid" id="discoverCards"></div>
             </section>
         </div>
@@ -260,60 +324,61 @@
         <div id="learnTab" class="tab-content">
             <div style="max-width: 600px; margin: 0 auto;">
                 <form id="ideaForm" class="input-group">
-                <input type="text" id="goalInput" placeholder="e.g. Machine Learning, React, Go..." required>
-                <button type="submit">Generate</button>
-            </form>
+                    <input type="text" id="goalInput" placeholder="e.g. Machine Learning, React, Go..." required>
+                    <button type="submit">Generate</button>
+                </form>
 
-            <div class="loader" id="loader"></div>
-            <div class="error" id="errorMsg"></div>
+                <div class="loader" id="loader"></div>
+                <div class="error" id="errorMsg"></div>
 
-            <div class="card" id="ideaCard">
-                <h2 id="cardTitle"></h2>
-                <p id="cardTagline"
-                    style="font-style: italic; margin-bottom: 1.5rem; color: var(--primary); font-weight: 600; font-size: 1.1rem; line-height: 1.4;">
-                </p>
+                <div class="card" id="ideaCard">
+                    <h2 id="cardTitle"></h2>
+                    <p id="cardTagline"
+                        style="font-style: italic; margin-bottom: 1.5rem; color: var(--primary); font-weight: 600; font-size: 1.1rem; line-height: 1.4;">
+                    </p>
 
-                <div class="category">
-                    <div class="category-title">Description</div>
-                    <p class="category-content" id="cardDesc"></p>
-                </div>
+                    <div class="category">
+                        <div class="category-title">Description</div>
+                        <p class="category-content" id="cardDesc"></p>
+                    </div>
 
-                <div class="category">
-                    <div class="category-title">Why This Works</div>
-                    <p class="category-content" id="cardWhyWorks"></p>
-                </div>
+                    <div class="category">
+                        <div class="category-title">Why This Works</div>
+                        <p class="category-content" id="cardWhyWorks"></p>
+                    </div>
 
-                <div class="category">
-                    <div class="category-title">Core Features</div>
-                    <ul class="category-content" id="cardFeatures" style="margin-top: 0; padding-left: 1.2rem;"></ul>
-                </div>
+                    <div class="category">
+                        <div class="category-title">Core Features</div>
+                        <ul class="category-content" id="cardFeatures" style="margin-top: 0; padding-left: 1.2rem;">
+                        </ul>
+                    </div>
 
-                <div class="category">
-                    <div class="category-title">What you'll learn</div>
-                    <ul class="category-content" id="cardLearn" style="margin-top: 0; padding-left: 1.2rem;"></ul>
-                </div>
+                    <div class="category">
+                        <div class="category-title">What you'll learn</div>
+                        <ul class="category-content" id="cardLearn" style="margin-top: 0; padding-left: 1.2rem;"></ul>
+                    </div>
 
-                <div class="category">
-                    <div class="category-title">Tools & Tech</div>
-                    <p class="category-content" id="cardTools"></p>
-                </div>
+                    <div class="category">
+                        <div class="category-title">Tools & Tech</div>
+                        <p class="category-content" id="cardTools"></p>
+                    </div>
 
-                <div class="category">
-                    <div class="category-title">First Step</div>
-                    <p class="category-content" id="cardFirstStep"></p>
-                </div>
+                    <div class="category">
+                        <div class="category-title">First Step</div>
+                        <p class="category-content" id="cardFirstStep"></p>
+                    </div>
 
-                <div class="category">
-                    <div class="category-title">First Step</div>
-                    <p class="category-content" id="cardFirstStep"></p>
-                </div>
+                    <div class="category">
+                        <div class="category-title">First Step</div>
+                        <p class="category-content" id="cardFirstStep"></p>
+                    </div>
 
-                <div class="category">
-                    <div class="category-title">Estimated Time</div>
-                    <p class="category-content" id="cardTime"></p>
+                    <div class="category">
+                        <div class="category-title">Estimated Time</div>
+                        <p class="category-content" id="cardTime"></p>
+                    </div>
                 </div>
             </div>
-        </div>
         </div>
     </div>
 
@@ -326,7 +391,7 @@
             btn.addEventListener('click', () => {
                 tabBtns.forEach(b => b.classList.remove('active'));
                 tabContents.forEach(c => c.classList.remove('active'));
-                
+
                 btn.classList.add('active');
                 document.getElementById(btn.dataset.target).classList.add('active');
             });
@@ -338,56 +403,184 @@
         const card = document.getElementById('ideaCard');
         const errorMsg = document.getElementById('errorMsg');
 
-        form.addEventListener('submit', async (e) => {
+        const labels = {
+            TITLE: "Title",
+            TAGLINE: "Tagline",
+            INSPIRED_BY: "Inspired By",
+            DESCRIPTION: "Description",
+            WHY: "Why This Works",
+            FEATURES: "Core Features",
+            LEARN: "What you'll learn",
+            TOOLS: "Tools & Tech",
+            FIRST_STEP: "First Step",
+            TIME: "Estimated Time"
+        };
+
+        window.renderQueue = [];
+        window.renderInterval = null;
+
+        function startRenderQueue() {
+            if (window.renderInterval) clearInterval(window.renderInterval);
+            window.renderQueue = [];
+            window.renderInterval = setInterval(() => {
+                if (window.renderQueue.length === 0) return;
+
+                let processedChar = false;
+                while (window.renderQueue.length > 0 && !processedChar) {
+                    const action = window.renderQueue.shift();
+                    if (action.type === 'char') {
+                        if (action.el) action.el.textContent += action.char;
+                        processedChar = true; // Wait for next tick for next character
+                    } else if (action.type === 'html') {
+                        if (action.el) action.el.innerHTML = action.html;
+                    } else if (action.type === 'append') {
+                        if (action.parent && action.el) action.parent.appendChild(action.el);
+                    } else if (action.type === 'post-process') {
+                        if (action.processType === 'TOOLS') {
+                            action.el.textContent = action.el.textContent.split('|').map(s => s.trim()).filter(Boolean).join(', ');
+                        } else {
+                            const items = action.el.textContent.split('|').map(s => s.trim()).filter(Boolean);
+                            action.el.innerHTML = items.map(l => `<li>${l}</li>`).join('');
+                        }
+                    }
+                }
+            }, 18);
+        }
+
+        form.addEventListener('submit', (e) => {
             e.preventDefault();
             const goal = input.value.trim();
             if (!goal) return;
 
             // Reset UI
             card.classList.remove('visible');
-            setTimeout(() => { card.style.display = 'none'; }, 300); // match transition
             errorMsg.style.display = 'none';
             btn.disabled = true;
-            loader.style.display = 'block';
 
-            try {
-                const response = await fetch('/generate-idea', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ goal })
-                });
+            card.innerHTML = '';
+            card.style.display = 'block';
+            void card.offsetWidth;
+            card.classList.add('visible');
 
-                if (!response.ok) {
-                    const errInfo = await response.json();
-                    throw new Error(errInfo.detail || 'Something went wrong');
+            const eventSource = new EventSource(`/generate-idea?goal=${encodeURIComponent(goal)}`);
+
+            startRenderQueue();
+
+            let currentField = null;
+            let fieldBuffer = "";
+            let currentContentEl = null;
+
+            eventSource.onmessage = function (event) {
+                if (event.data === "[DONE]") {
+                    eventSource.close();
+                    btn.disabled = false;
+                    return;
                 }
 
-                const data = await response.json();
+                let chunk = "";
+                try { chunk = JSON.parse(event.data); } catch { chunk = event.data; }
 
-                // Populate card
-                document.getElementById('cardTitle').textContent = data.title;
-                document.getElementById('cardTagline').textContent = data.tagline;
-                document.getElementById('cardDesc').textContent = data.description;
-                document.getElementById('cardWhyWorks').textContent = data.why_this_works;
-                document.getElementById('cardFeatures').innerHTML = data.core_features.map(f => `<li>${f}</li>`).join('');
-                document.getElementById('cardLearn').innerHTML = data.what_youll_learn.map(l => `<li>${l}</li>`).join('');
-                document.getElementById('cardTools').textContent = data.tools_and_tech.join(', ');
-                document.getElementById('cardFirstStep').textContent = data.first_step;
-                document.getElementById('cardTime').textContent = data.estimated_time;
+                if (chunk.toString().startsWith('Error:')) {
+                    errorMsg.textContent = chunk;
+                    errorMsg.style.display = 'block';
+                    eventSource.close();
+                    btn.disabled = false;
+                    return;
+                }
 
-                // Show card
-                card.style.display = 'block';
-                // Trigger reflow
-                void card.offsetWidth;
-                card.classList.add('visible');
+                for (let i = 0; i < chunk.length; i++) {
+                    const char = chunk[i];
 
-            } catch (error) {
-                errorMsg.textContent = error.message;
-                errorMsg.style.display = 'block';
-            } finally {
+                    if (char === '[') {
+                        fieldBuffer += char;
+                    } else if (char === ']' && fieldBuffer.includes('[')) {
+                        fieldBuffer += char;
+                        const tagMatch = fieldBuffer.match(/^\[([A-Z_]+)\]$/);
+                        const closeMatch = fieldBuffer.match(/^\[\/([A-Z_]+)\]$/);
+
+                        if (tagMatch) {
+                            currentField = tagMatch[1];
+                            const labelText = labels[currentField] || currentField;
+
+                            if (currentField === 'TITLE') {
+                                const header = document.createElement('h2');
+                                header.style.marginTop = '0';
+                                header.style.color = 'white';
+                                window.renderQueue.push({ type: 'append', parent: card, el: header });
+
+                                for (let c of labelText) {
+                                    window.renderQueue.push({ type: 'char', char: c, el: header });
+                                }
+
+                                const contentEl = document.createElement('span');
+                                contentEl.style.display = 'block';
+                                contentEl.style.fontWeight = 'normal';
+                                window.renderQueue.push({ type: 'append', parent: header, el: contentEl });
+                                currentContentEl = contentEl;
+                            } else if (currentField === 'TAGLINE') {
+                                const p = document.createElement('p');
+                                p.style = 'font-style: italic; margin-bottom: 1.5rem; color: var(--primary); font-weight: 600; font-size: 1.1rem; line-height: 1.4;';
+                                window.renderQueue.push({ type: 'append', parent: card, el: p });
+                                currentContentEl = p;
+                            } else {
+                                const catDiv = document.createElement('div');
+                                catDiv.className = 'category';
+                                window.renderQueue.push({ type: 'append', parent: card, el: catDiv });
+
+                                const titleDiv = document.createElement('div');
+                                titleDiv.className = 'category-title';
+                                window.renderQueue.push({ type: 'append', parent: catDiv, el: titleDiv });
+
+                                for (let c of labelText) {
+                                    window.renderQueue.push({ type: 'char', char: c, el: titleDiv });
+                                }
+
+                                const contentDiv = document.createElement((currentField === 'LEARN' || currentField === 'FEATURES') ? 'ul' : 'p');
+                                contentDiv.className = 'category-content';
+                                if (contentDiv.tagName === 'UL') {
+                                    contentDiv.style.marginTop = '0';
+                                    contentDiv.style.paddingLeft = '1.2rem';
+                                }
+                                window.renderQueue.push({ type: 'append', parent: catDiv, el: contentDiv });
+                                currentContentEl = contentDiv;
+                            }
+
+                            fieldBuffer = "";
+                        } else if (closeMatch) {
+                            const closedField = closeMatch[1];
+                            if (closedField === "LEARN" || closedField === "FEATURES" || closedField === "TOOLS") {
+                                if (currentContentEl) {
+                                    window.renderQueue.push({ type: 'post-process', el: currentContentEl, processType: closedField });
+                                }
+                            }
+                            currentField = null;
+                            currentContentEl = null;
+                            fieldBuffer = "";
+                        } else {
+                            if (currentContentEl) {
+                                for (let c of fieldBuffer) {
+                                    window.renderQueue.push({ type: 'char', char: c, el: currentContentEl });
+                                }
+                            }
+                            fieldBuffer = "";
+                        }
+                    } else if (fieldBuffer.startsWith('[')) {
+                        fieldBuffer += char;
+                    } else {
+                        if (currentContentEl) {
+                            window.renderQueue.push({ type: 'char', char: char, el: currentContentEl });
+                        }
+                    }
+                }
+            };
+
+            eventSource.onerror = function (err) {
+                eventSource.close();
                 btn.disabled = false;
                 loader.style.display = 'none';
-            }
+                errorMsg.textContent = "Connection lost or stream error.";
+                errorMsg.style.display = 'block';
+            };
         });
 
         // Discovery Section Logic
@@ -396,74 +589,154 @@
         const discoverErrorMsg = document.getElementById('discoverErrorMsg');
         const discoverCardsContainer = document.getElementById('discoverCards');
 
-        discoverBtn.addEventListener('click', async () => {
+        discoverBtn.addEventListener('click', () => {
             discoverBtn.disabled = true;
-            discoverLoader.style.display = 'block';
             discoverErrorMsg.style.display = 'none';
             discoverCardsContainer.classList.remove('visible');
             discoverCardsContainer.innerHTML = '';
 
-            try {
-                const response = await fetch('/discover');
-                if (!response.ok) {
-                    const errInfo = await response.json();
-                    throw new Error(errInfo.detail || 'Something went wrong fetching discovery ideas');
+            const eventSource = new EventSource('/discover');
+            let fullText = "";
+
+            discoverCardsContainer.style.display = 'grid'; // Grid holds the 3 cards natively
+
+            for (let i = 0; i < 3; i++) {
+                const div = document.createElement('div');
+                div.className = 'card visible';
+                div.style.display = 'block';
+                div.style.transform = 'none';
+                div.style.opacity = '1';
+                discoverCardsContainer.appendChild(div);
+            }
+            void discoverCardsContainer.offsetWidth;
+            discoverCardsContainer.classList.add('visible');
+
+            startRenderQueue();
+
+            let currentCardIndex = -1;
+            let currentField = null;
+            let fieldBuffer = "";
+            let currentContentEl = null;
+
+            eventSource.onmessage = function (event) {
+                if (event.data === "[DONE]") {
+                    eventSource.close();
+                    discoverBtn.disabled = false;
+                    return;
                 }
 
-                let data = await response.json();
+                let chunk = "";
+                try { chunk = JSON.parse(event.data); } catch { chunk = event.data; }
 
-                // Allow array or object array wrappers to be safe
-                const ideas = Array.isArray(data) ? data : (data.ideas || []);
+                if (chunk.toString().startsWith('Error:')) {
+                    discoverErrorMsg.textContent = chunk;
+                    discoverErrorMsg.style.display = 'block';
+                    eventSource.close();
+                    discoverBtn.disabled = false;
+                    return;
+                }
 
-                ideas.forEach(idea => {
-                    const div = document.createElement('div');
-                    div.className = 'card visible'; // reusing card classes
-                    div.style.display = 'block';
-                    div.style.transform = 'none';
-                    div.style.opacity = '1';
+                for (let i = 0; i < chunk.length; i++) {
+                    const char = chunk[i];
 
-                    div.innerHTML = `
-                        <h3 style="margin-top: 0; color: white;">${idea.title}</h3>
-                        <p style="font-style: italic; margin-bottom: 1.5rem; color: var(--primary); font-weight: 600; font-size: 1.1rem; line-height: 1.4;">
-                            ${idea.tagline}
-                        </p>
-                        
-                        <div class="category">
-                            <div class="category-title">Inspired By</div>
-                            <p class="category-content">${idea.inspired_by || 'Trending tech'}</p>
-                        </div>
-                        
-                        <div class="category">
-                            <div class="category-title">Description</div>
-                            <p class="category-content">${idea.description}</p>
-                        </div>
+                    if (char === '[') {
+                        fieldBuffer += char;
+                    } else if (char === ']' && fieldBuffer.includes('[')) {
+                        fieldBuffer += char;
+                        const tagMatch = fieldBuffer.match(/^\[([A-Z_]+)\]$/);
+                        const closeMatch = fieldBuffer.match(/^\[\/([A-Z_]+)\]$/);
 
-                        <div class="category">
-                            <div class="category-title">What you'll learn</div>
-                            <ul class="category-content" style="margin-top: 0; padding-left: 1.2rem;">
-                                ${idea.what_youll_learn.map(l => `<li>${l}</li>`).join('')}
-                            </ul>
-                        </div>
+                        if (tagMatch) {
+                            currentField = tagMatch[1];
+                            const labelText = labels[currentField] || currentField;
 
-                        <div class="category">
-                            <div class="category-title">First Step</div>
-                            <p class="category-content">${idea.first_step}</p>
-                        </div>
-                    `;
-                    discoverCardsContainer.appendChild(div);
-                });
+                            if (currentField === 'TITLE') {
+                                currentCardIndex++;
+                            }
 
-                setTimeout(() => {
-                    discoverCardsContainer.classList.add('visible');
-                }, 50);
+                            const targetCard = discoverCardsContainer.children[Math.min(2, Math.max(0, currentCardIndex))];
 
-            } catch (error) {
-                discoverErrorMsg.textContent = error.message;
-                discoverErrorMsg.style.display = 'block';
-            } finally {
+                            if (targetCard) {
+                                if (currentField === 'TITLE') {
+                                    const header = document.createElement('h3');
+                                    header.style.marginTop = '0';
+                                    header.style.color = 'white';
+                                    window.renderQueue.push({ type: 'append', parent: targetCard, el: header });
+
+                                    for (let c of labelText) {
+                                        window.renderQueue.push({ type: 'char', char: c, el: header });
+                                    }
+
+                                    const contentEl = document.createElement('span');
+                                    contentEl.style.display = 'block';
+                                    contentEl.style.fontWeight = 'normal';
+                                    window.renderQueue.push({ type: 'append', parent: header, el: contentEl });
+                                    currentContentEl = contentEl;
+                                } else if (currentField === 'TAGLINE') {
+                                    const p = document.createElement('p');
+                                    p.style = 'font-style: italic; margin-bottom: 1.5rem; color: var(--primary); font-weight: 600; font-size: 1.1rem; line-height: 1.4;';
+                                    window.renderQueue.push({ type: 'append', parent: targetCard, el: p });
+                                    currentContentEl = p;
+                                } else {
+                                    const catDiv = document.createElement('div');
+                                    catDiv.className = 'category';
+                                    window.renderQueue.push({ type: 'append', parent: targetCard, el: catDiv });
+
+                                    const titleDiv = document.createElement('div');
+                                    titleDiv.className = 'category-title';
+                                    window.renderQueue.push({ type: 'append', parent: catDiv, el: titleDiv });
+
+                                    for (let c of labelText) {
+                                        window.renderQueue.push({ type: 'char', char: c, el: titleDiv });
+                                    }
+
+                                    const contentDiv = document.createElement((currentField === 'LEARN' || currentField === 'FEATURES') ? 'ul' : 'p');
+                                    contentDiv.className = 'category-content';
+                                    if (contentDiv.tagName === 'UL') {
+                                        contentDiv.style.marginTop = '0';
+                                        contentDiv.style.paddingLeft = '1.2rem';
+                                    }
+                                    window.renderQueue.push({ type: 'append', parent: catDiv, el: contentDiv });
+                                    currentContentEl = contentDiv;
+                                }
+                            }
+
+                            fieldBuffer = "";
+                        } else if (closeMatch) {
+                            const closedField = closeMatch[1];
+                            if (closedField === "LEARN" || closedField === "FEATURES" || closedField === "TOOLS") {
+                                if (currentContentEl) {
+                                    window.renderQueue.push({ type: 'post-process', el: currentContentEl, processType: closedField });
+                                }
+                            }
+                            currentField = null;
+                            currentContentEl = null;
+                            fieldBuffer = "";
+                        } else {
+                            if (currentContentEl) {
+                                for (let c of fieldBuffer) {
+                                    window.renderQueue.push({ type: 'char', char: c, el: currentContentEl });
+                                }
+                            }
+                            fieldBuffer = "";
+                        }
+                    } else if (fieldBuffer.startsWith('[')) {
+                        fieldBuffer += char;
+                    } else {
+                        if (currentContentEl) {
+                            window.renderQueue.push({ type: 'char', char: char, el: currentContentEl });
+                        }
+                    }
+                }
+            };
+
+            eventSource.onerror = function (err) {
+                eventSource.close();
                 discoverBtn.disabled = false;
                 discoverLoader.style.display = 'none';
-            }
+                discoverErrorMsg.textContent = "Connection lost or stream error.";
+                discoverErrorMsg.style.display = 'block';
+            };
         });
     </script>
 </body>

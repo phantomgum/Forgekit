@@ -4,27 +4,64 @@ from dotenv import load_dotenv
 
 load_dotenv()
 import requests
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import HTMLResponse, StreamingResponse
 from bs4 import BeautifulSoup
 
 app = FastAPI()
 
-class IdeaRequest(BaseModel):
-    goal: str
-
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 
-@app.post("/generate-idea")
-def generate_idea(request: IdeaRequest):
+def stream_anthropic(prompt: str, max_tokens: int):
     if not ANTHROPIC_API_KEY:
-        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not set")
+        yield f"data: {json.dumps('ANTHROPIC_API_KEY not set')}\n\n"
+        yield "data: [DONE]\n\n"
+        return
+
+    headers = {
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json"
+    }
+    payload = { 
+        "model": "claude-sonnet-4-6",
+        "max_tokens": max_tokens,
+        "messages": [{"role": "user", "content": prompt}],
+        "stream": True
+    }
+
+    try:
+        with requests.post("https://api.anthropic.com/v1/messages", json=payload, headers=headers, stream=True) as response:
+            if response.status_code != 200:
+                yield f"data: {json.dumps(f'Error: {response.text}')}\n\n"
+                yield "data: [DONE]\n\n"
+                return
+
+            for line in response.iter_lines():
+                if line:
+                    decoded = line.decode('utf-8')
+                    if decoded.startswith('data:'):
+                        data_str = decoded[5:].strip()
+                        try:
+                            event_data = json.loads(data_str)
+                            if event_data.get("type") == "content_block_delta":
+                                text = event_data.get("delta", {}).get("text", "")
+                                if text:
+                                    yield f"data: {json.dumps(text)}\n\n"
+                        except json.JSONDecodeError:
+                            pass
+            yield "data: [DONE]\n\n"
+    except Exception as e:
+        yield f"data: {json.dumps(f'Error: {str(e)}')}\n\n"
+        yield "data: [DONE]\n\n"
+
+@app.get("/generate-idea")
+def generate_idea(goal: str = Query(...)):
 
     prompt = f"""
     You are an expert software engineer and creative project mentor. Your job is to design impressive, creative, and genuinely useful project ideas that force the developer to deeply learn a specific technology by building something real with it.
 
-You are given a technology or tool the user wants to learn :{request.goal}. You generate ONE project idea that meets all of these criteria:
+You are given a technology or tool the user wants to learn :{goal}. You generate ONE project idea that meets all of these criteria:
 
 - CREATIVE: Not a todo app, not a clone, not a tutorial project. Something that would make someone say "that's actually a cool idea"
 - SCOPED: Completable in a weekend to two weeks solo. Not a startup, not a platform. One focused thing.
@@ -32,59 +69,20 @@ You are given a technology or tool the user wants to learn :{request.goal}. You 
 - REAL UTILITY: It solves an actual problem or does something genuinely interesting. Not just a demo.
 - IMPRESSIVE: The kind of project that looks good in a GitHub portfolio and sparks conversation.
 
-Return your response as JSON with exactly these fields:
-{{
-  "title": "Short punchy project name",
-  "tagline": "One sentence that makes someone want to build it",
-  "description": "2-3 sentences on what it does and why it's interesting",
-  "why_this_works": "1-2 sentences on why this project specifically forces deep learning of the technology",
-  "core_features": ["feature 1", "feature 2", "feature 3"],
-  "tools_and_tech": ["the requested technology", "other tools needed"],
-  "what_youll_learn": ["specific skill 1", "specific skill 2", "specific skill 3"],
-  "first_step": "The very first concrete thing to build — specific enough to start today",
-  "estimated_time": "Realistic time range to complete"
-}}
+Return your response using ONLY the following exact format, field by field, with no other text before or after, wrapping the actual text in these exact simple delimiters:
 
-Return only valid JSON. No markdown, no backticks, no explanation outside the JSON.
+[TITLE]Short punchy project name[/TITLE]
+[TAGLINE]One sentence that makes someone want to build it[/TAGLINE]
+[DESCRIPTION]2-3 sentences on what it does and why it's interesting[/DESCRIPTION]
+[WHY]1-2 sentences on why this project specifically forces deep learning of the technology[/WHY]
+[FEATURES]feature 1 | feature 2 | feature 3[/FEATURES]
+[LEARN]specific skill 1 | specific skill 2 | specific skill 3[/LEARN]
+[TOOLS]the requested technology | other tools needed[/TOOLS]
+[FIRST_STEP]The very first concrete thing to build — specific enough to start today[/FIRST_STEP]
+[TIME]Realistic time range to complete[/TIME]
     """
 
-    headers = {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-
-    payload = { 
-        "model": "claude-sonnet-4-6",
-        "max_tokens": 1000,
-        "messages": [
-            {"role": "user", "content": prompt}
-        ]
-    }
-
-    try:
-        response = requests.post("https://api.anthropic.com/v1/messages", json=payload, headers=headers)
-        response.raise_for_status()
-        data = response.json()
-        
-        content_text = data.get("content", [])[0].get("text", "")
-        
-        # Extract json safely in case Claude uses markdown blocks despite instructions
-        if "```json" in content_text:
-            content_text = content_text.split("```json")[1].split("```")[0].strip()
-        elif "```" in content_text:
-            content_text = content_text.split("```")[1].split("```")[0].strip()
-            
-        idea_json = json.loads(content_text)
-        return idea_json
-    except requests.exceptions.RequestException as e:
-        # Anthropic provides a message in response JSON on failure usually
-        err_msg = str(e)
-        if e.response is not None:
-             err_msg = e.response.text
-        raise HTTPException(status_code=500, detail=f"Error communicating with Anthropic API: {err_msg}")
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Failed to parse response from AI. Please try again.")
+    return StreamingResponse(stream_anthropic(prompt, 1000), media_type="text/event-stream")
 
 @app.get("/discover")
 def discover_ideas():
@@ -159,59 +157,23 @@ Here is what is currently trending:
 
 {context_string}
 
-Return exactly 3 project ideas as a JSON array. Each idea must have these fields:
-{{
-  "title": "Short punchy project name",
-  "tagline": "One sentence that makes someone want to build it",
-  "inspired_by": "Which trending repo or story inspired this",
-  "description": "2-3 sentences on what it does and why it's interesting",
-  "why_this_works": "Why this forces real learning of something trending",
-  "core_features": ["feature 1", "feature 2", "feature 3"],
-  "tools_and_tech": ["primary trending tech", "other tools"],
-  "what_youll_learn": ["skill 1", "skill 2", "skill 3"],
-  "first_step": "The very first concrete thing to build today",
-  "estimated_time": "Realistic time range"
-}}
+Return exactly 3 project ideas. Format each idea using ONLY the following exact format, field by field, using these simple delimiters:
 
-Return only a valid JSON array of 3 objects. No markdown, no backticks, 
-no explanation outside the JSON.
+[TITLE]Short punchy project name[/TITLE]
+[TAGLINE]One sentence that makes someone want to build it[/TAGLINE]
+[INSPIRED_BY]Which trending repo or story inspired this[/INSPIRED_BY]
+[DESCRIPTION]2-3 sentences on what it does and why it's interesting[/DESCRIPTION]
+[WHY]Why this forces real learning of something trending[/WHY]
+[FEATURES]feature 1 | feature 2 | feature 3[/FEATURES]
+[TOOLS]primary trending tech | other tools[/TOOLS]
+[LEARN]specific skill 1 | specific skill 2 | specific skill 3[/LEARN]
+[FIRST_STEP]The very first concrete thing to build today[/FIRST_STEP]
+[TIME]Realistic time range[/TIME]
+
+Do this 3 times consecutively, once for each idea. Do not include any other text outside these tags.
     """
 
-    headers = {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-
-    payload = { 
-        "model": "claude-sonnet-4-6",
-        "max_tokens": 2000,
-        "messages": [
-            {"role": "user", "content": prompt}
-        ]
-    }
-
-    try:
-        response = requests.post("https://api.anthropic.com/v1/messages", json=payload, headers=headers)
-        response.raise_for_status()
-        data = response.json()
-        
-        content_text = data.get("content", [])[0].get("text", "")
-        
-        if "```json" in content_text:
-            content_text = content_text.split("```json")[1].split("```")[0].strip()
-        elif "```" in content_text:
-            content_text = content_text.split("```")[1].split("```")[0].strip()
-            
-        idea_json = json.loads(content_text)
-        return idea_json
-    except requests.exceptions.RequestException as e:
-        err_msg = str(e)
-        if e.response is not None:
-             err_msg = e.response.text
-        raise HTTPException(status_code=500, detail=f"Error communicating with Anthropic API: {err_msg}")
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Failed to parse response from AI. Please try again.")
+    return StreamingResponse(stream_anthropic(prompt, 2000), media_type="text/event-stream")
 
 @app.get("/")
 def read_root():
