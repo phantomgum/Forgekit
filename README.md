@@ -31,6 +31,7 @@ TrendGenie is that bridge. It turns trending tech into concrete things to build.
 - **AI** — Anthropic API (Claude), raw with no wrappers
 - **Retrieval** — GitHub trending scraper (BeautifulSoup), Hacker News API
 - **Streaming** — Custom delimiter-based streaming format with character queue typewriter rendering
+- **Database** — Supabase (PostgreSQL) for persisting saved idea
 
 ---
 
@@ -71,10 +72,32 @@ cd TrendGenie
 pip install -r requirements.txt
 ```
 
+### Set up Supabase
+1. Create a free project at supabase.com
+2. Run this SQL in the Supabase query editor to create the table:
+
+create table saved_ideas (
+  id uuid default gen_random_uuid() primary key,
+  created_at timestamp with time zone default now(),
+  mode text not null, -- 'discovery' or 'intent'
+  title text,
+  tagline text,
+  description text,
+  inspired_by text, -- only for discovery mode
+  what_youll_learn text[],
+  tools_and_tech text[],
+  first_step text,
+  estimated_time text
+);
+
+3. Copy your Project URL and anon public key from project settings
+
 ### Set your API key
 
 ```bash
 export ANTHROPIC_API_KEY=your_key_here
+export SUPABASE_URL=your_project_url
+export SUPABASE_KEY=your_anon_key
 ```
 
 ### Run
