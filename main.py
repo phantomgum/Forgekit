@@ -6,11 +6,28 @@ load_dotenv()
 import requests
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse, StreamingResponse
+from pydantic import BaseModel
+from typing import Optional, Union, List
 from bs4 import BeautifulSoup
+from supabase import create_client, Client
 
 app = FastAPI()
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
+
+class SavedIdea(BaseModel):
+    mode: str
+    title: str
+    tagline: str
+    description: str
+    inspired_by: Optional[str] = ""
+    what_youll_learn: Union[str, List[str]]
+    tools_and_tech: Union[str, List[str]]
+    first_step: str
+    estimated_time: str
 
 def stream_anthropic(prompt: str, max_tokens: int):
     if not ANTHROPIC_API_KEY:
@@ -174,6 +191,39 @@ Do this 3 times consecutively, once for each idea. Do not include any other text
     """
 
     return StreamingResponse(stream_anthropic(prompt, 2000), media_type="text/event-stream")
+
+@app.post("/save-idea")
+def save_idea(idea: SavedIdea):
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Supabase not configured")
+    
+    data = idea.dict()
+    
+    # Supabase/PostgreSQL is expecting an Array for these columns since you made them array fields.
+    if isinstance(data.get("what_youll_learn"), str):
+        data["what_youll_learn"] = [x.strip() for x in data["what_youll_learn"].split("|") if x.strip()]
+    if isinstance(data.get("tools_and_tech"), str):
+        data["tools_and_tech"] = [x.strip() for x in data["tools_and_tech"].split("|") if x.strip()]
+
+    try:
+        res = supabase.table("saved_ideas").insert(data).execute()
+        return res.data[0] if res.data else {"status": "error"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/saved-ideas")
+def get_saved_ideas():
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Supabase not configured")
+    res = supabase.table("saved_ideas").select("*").order("created_at", desc=True).execute()
+    return res.data
+
+@app.delete("/saved-ideas/{id}")
+def delete_saved_idea(id: str):
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Supabase not configured")
+    supabase.table("saved_ideas").delete().eq("id", id).execute()
+    return {"status": "success"}
 
 @app.get("/")
 def read_root():

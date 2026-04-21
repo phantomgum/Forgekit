@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgekit</title>
+    <title>TrendGenie</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪄</text></svg>">
     <style>
         :root {
             --primary: #6366f1;
@@ -20,7 +21,7 @@
             box-sizing: border-box;
             scrollbar-width: none;
         }
-        
+
         ::-webkit-scrollbar {
             display: none;
         }
@@ -131,7 +132,7 @@
         button:hover:not(:disabled) {
             background-color: var(--primary-hover);
         }
-        
+
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -176,7 +177,8 @@
             }
         }
 
-        .card h2, .card h3 {
+        .card h2,
+        .card h3 {
             margin-top: 0;
             color: var(--text);
             font-weight: 500;
@@ -184,8 +186,9 @@
             font-size: 1.25rem;
             margin-bottom: 0.25rem;
         }
-        
-        .card h2 span, .card h3 span {
+
+        .card h2 span,
+        .card h3 span {
             color: var(--text);
         }
 
@@ -255,7 +258,7 @@
             background-color: rgba(255, 255, 255, 0.05);
             color: var(--text);
         }
-        
+
         .tab-btn:hover:not(.active) {
             background-color: transparent;
             color: var(--text);
@@ -274,6 +277,7 @@
             from {
                 opacity: 0;
             }
+
             to {
                 opacity: 1;
             }
@@ -291,8 +295,15 @@
         }
 
         @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
         }
 
         /* Loading Skeleton */
@@ -339,21 +350,102 @@
         }
 
         @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* Saved Ideas Additions */
+        .save-btn {
+            position: absolute;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .save-btn:hover:not(:disabled) {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-muted);
+        }
+
+        .save-btn.saved {
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .save-btn:disabled {
+            opacity: 1;
+            cursor: default;
+        }
+
+        .card-mode-tag {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .delete-btn {
+            position: absolute;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-style: italic;
         }
     </style>
 </head>
 
 <body>
     <nav>
-        <div class="logo">Forgekit <span class="dot"></span></div>
+        <div class="logo">TrendGenie <span class="dot"></span></div>
     </nav>
 
     <div class="container">
         <div class="tabs">
             <button class="tab-btn active" data-target="discoverTab">Discovery</button>
             <button class="tab-btn" data-target="learnTab">Learn</button>
+            <button class="tab-btn" data-target="savedTab" onclick="fetchSavedIdeas()">Saved Ideas</button>
         </div>
 
         <div id="discoverTab" class="tab-content active">
@@ -379,7 +471,7 @@
                     <div class="section-label">Playground</div>
                     <h2 class="section-heading">Generate a custom project</h2>
                 </div>
-            
+
                 <form id="ideaForm" class="input-group">
                     <input type="text" id="goalInput" placeholder="e.g. Machine Learning, React, Go..." required>
                     <button type="submit">Generate</button>
@@ -391,9 +483,18 @@
                 <div class="card" id="ideaCard"></div>
             </div>
         </div>
+
+        <div id="savedTab" class="tab-content">
+            <div class="section-header">
+                <div class="section-label">Library</div>
+                <h2 class="section-heading">Saved Ideas</h2>
+            </div>
+            <div id="savedEmptyState" class="empty-state">No saved ideas yet. Generate something worth building.</div>
+            <div class="discover-grid visible" id="savedCards"></div>
+        </div>
     </div>
 
-    <script>
+        <script>
         // Tab switching logic
         const tabBtns = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
@@ -483,6 +584,153 @@
             }, 18);
         }
 
+        function createSaveButton(cardData, container) {
+            const btn = document.createElement('button');
+            btn.className = 'save-btn';
+            btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg> Save idea`;
+            btn.onclick = async () => {
+                btn.disabled = true;
+                btn.innerHTML = "Saving...";
+                try {
+                    const res = await fetch('/save-idea', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(cardData)
+                    });
+                    if (res.ok) {
+                        btn.className = 'save-btn saved';
+                        btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Saved`;
+                    } else {
+                        throw new Error("Failed to save");
+                    }
+                } catch (e) {
+                    btn.disabled = false;
+                    btn.innerHTML = "Error. Try again";
+                }
+            };
+            container.appendChild(btn);
+        }
+
+        async function fetchSavedIdeas() {
+            const container = document.getElementById('savedCards');
+            const emptyState = document.getElementById('savedEmptyState');
+            container.innerHTML = '';
+            
+            try {
+                const res = await fetch('/saved-ideas');
+                const data = await res.json();
+                
+                if (data.length === 0) {
+                    emptyState.style.display = 'block';
+                    container.style.display = 'none';
+                } else {
+                    emptyState.style.display = 'none';
+                    container.style.display = 'grid';
+                    
+                    data.forEach(idea => {
+                        const div = document.createElement('div');
+                        div.className = 'card visible';
+                        div.style.display = 'block';
+                        div.style.padding = '1.5rem 2rem';
+
+                        const header = document.createElement('div');
+                        header.style = 'cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;';
+                        header.innerHTML = `
+                            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                                <h3 style="margin:0;color:white;font-size:1.1rem;">${idea.title}</h3>
+                                <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.4rem; border-radius: 4px;">${idea.mode}</span>
+                            </div>
+                            <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s ease; flex-shrink: 0; transform: rotate(0deg);"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        `;
+
+                        const body = document.createElement('div');
+                        body.style = 'display: none; margin-top: 1.5rem; position: relative; padding-bottom: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;';
+
+                        let html = `
+                            <p style="font-style:italic;margin-bottom:1.5rem;color:var(--primary);font-weight:600;font-size:1.1rem;line-height:1.4;">${idea.tagline}</p>
+                        `;
+
+                        if (idea.inspired_by) {
+                            html += `
+                                <div class="category">
+                                    <div class="category-title">Inspired By</div>
+                                    <p class="category-content">${idea.inspired_by}</p>
+                                </div>
+                            `;
+                        }
+
+                        html += `
+                            <div class="category">
+                                <div class="category-title">Description</div>
+                                <p class="category-content">${idea.description}</p>
+                            </div>
+                            <div class="category">
+                                <div class="category-title">What you'll learn</div>
+                                <ul class="category-content" style="margin-top:0;padding-left:1.2rem;">
+                                    ${(Array.isArray(idea.what_youll_learn) ? idea.what_youll_learn : idea.what_youll_learn.split('|')).map(s=>`<li>${(s||'').trim()}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="category">
+                                <div class="category-title">Tools & Tech</div>
+                                <p class="category-content">${(Array.isArray(idea.tools_and_tech) ? idea.tools_and_tech : idea.tools_and_tech.split('|')).map(s=>(s||'').trim()).join(', ')}</p>
+                            </div>
+                            <div class="category">
+                                <div class="category-title">First Step</div>
+                                <p class="category-content">${idea.first_step}</p>
+                            </div>
+                            <div class="category">
+                                <div class="category-title">Estimated Time</div>
+                                <p class="category-content">${idea.estimated_time}</p>
+                            </div>
+                        `;
+
+                        body.innerHTML = html;
+
+                        const delBtn = document.createElement('button');
+                        delBtn.className = 'delete-btn';
+                        delBtn.style.position = 'absolute';
+                        delBtn.style.bottom = '0';
+                        delBtn.style.right = '0';
+                        delBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Delete`;
+                        delBtn.onclick = async () => {
+                            delBtn.disabled = true;
+                            delBtn.innerHTML = 'Deleting...';
+                            try {
+                                const dres = await fetch(`/saved-ideas/${idea.id}`, {method: 'DELETE'});
+                                if (dres.ok) {
+                                    div.remove();
+                                    if (container.children.length === 0) {
+                                        emptyState.style.display = 'block';
+                                        container.style.display = 'none';
+                                    }
+                                } else {
+                                    delBtn.disabled = false;
+                                    delBtn.innerHTML = 'Error';
+                                }
+                            } catch (e) {
+                                delBtn.disabled = false;
+                                delBtn.innerHTML = 'Error';
+                            }
+                        };
+                        
+                        body.appendChild(delBtn);
+                        div.appendChild(header);
+                        div.appendChild(body);
+
+                        header.onclick = () => {
+                            const isCollapsed = body.style.display === 'none';
+                            body.style.display = isCollapsed ? 'block' : 'none';
+                            header.querySelector('.chevron').style.transform = isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)';
+                        };
+
+                        container.appendChild(div);
+                    });
+                }
+            } catch (e) {
+                console.error("Error fetching saved ideas:", e);
+            }
+        }
+
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             const goal = input.value.trim();
@@ -504,16 +752,32 @@
             let currentField = null;
             let fieldBuffer = "";
             let currentContentEl = null;
+            
+            let generatedData = {
+                mode: 'intent',
+                title: '', tagline: '', description: '', inspired_by: '',
+                what_youll_learn: '', tools_and_tech: '', first_step: '', estimated_time: ''
+            };
+
+            const fieldMapping = {
+                'TITLE': 'title', 'TAGLINE': 'tagline', 'DESCRIPTION': 'description',
+                'WHY': 'what_youll_learn', 'FEATURES': 'tools_and_tech', 'LEARN': 'what_youll_learn',
+                'TOOLS': 'tools_and_tech', 'FIRST_STEP': 'first_step', 'TIME': 'estimated_time'
+            };
 
             startRenderQueue(() => {
-                // If queue is completely empty and stream is closed, maybe remove cursor
+                // If queue is completely empty and stream is closed, add save btn
+                if (eventSource.readyState === EventSource.CLOSED && !card.querySelector('.save-btn')) {
+                    createSaveButton(generatedData, card);
+                    clearInterval(window.renderInterval);
+                }
             });
 
             eventSource.onmessage = function (event) {
                 if (event.data === "[DONE]") {
                     eventSource.close();
                     btn.disabled = false;
-                    window.renderQueue.push({ type: 'html', el: window.cursorEl, html: '' }); // Effectively erase cursor or remove it
+                    window.renderQueue.push({ type: 'html', el: window.cursorEl, html: '' }); 
                     if (window.cursorEl.parentNode) window.cursorEl.parentNode.removeChild(window.cursorEl);
                     return;
                 }
@@ -606,6 +870,9 @@
                             if (currentContentEl) {
                                 for (let c of fieldBuffer) {
                                     window.renderQueue.push({ type: 'char', char: c, el: currentContentEl });
+                                    if (currentField && fieldMapping[currentField]) {
+                                        generatedData[fieldMapping[currentField]] += c;
+                                    }
                                 }
                             }
                             fieldBuffer = "";
@@ -615,6 +882,9 @@
                     } else {
                         if (currentContentEl) {
                             window.renderQueue.push({ type: 'char', char: char, el: currentContentEl });
+                            if (currentField && fieldMapping[currentField]) {
+                                generatedData[fieldMapping[currentField]] += char;
+                            }
                         }
                     }
                 }
@@ -642,7 +912,8 @@
             discoverCardsContainer.innerHTML = '';
 
             const eventSource = new EventSource('/discover');
-            let fullText = "";
+            
+            let discoverGeneratedData = [];
 
             discoverCardsContainer.style.display = 'grid'; // Grid holds the 3 cards natively
 
@@ -654,17 +925,37 @@
                 div.style.opacity = '1';
                 div.innerHTML = skeletonHTML;
                 discoverCardsContainer.appendChild(div);
+                discoverGeneratedData.push({
+                    mode: 'discovery',
+                    title: '', tagline: '', description: '', inspired_by: '',
+                    what_youll_learn: '', tools_and_tech: '', first_step: '', estimated_time: ''
+                });
             }
             void discoverCardsContainer.offsetWidth;
             discoverCardsContainer.classList.add('visible');
 
-            startRenderQueue();
+            startRenderQueue(() => {
+                if (eventSource.readyState === EventSource.CLOSED && discoverCardsContainer.children[0] && !discoverCardsContainer.children[0].querySelector('.save-btn')) {
+                    for (let i = 0; i < 3; i++) {
+                        if (discoverCardsContainer.children[i]) {
+                            createSaveButton(discoverGeneratedData[i], discoverCardsContainer.children[i]);
+                        }
+                    }
+                    clearInterval(window.renderInterval);
+                }
+            });
 
             let isFirstChunk = true;
             let currentCardIndex = -1;
             let currentField = null;
             let fieldBuffer = "";
             let currentContentEl = null;
+            
+            const dFieldMapping = {
+                'TITLE': 'title', 'TAGLINE': 'tagline', 'DESCRIPTION': 'description',
+                'INSPIRED_BY': 'inspired_by', 'WHY': 'what_youll_learn', 'FEATURES': 'tools_and_tech',
+                'LEARN': 'what_youll_learn', 'TOOLS': 'tools_and_tech', 'FIRST_STEP': 'first_step', 'TIME': 'estimated_time'
+            };
 
             eventSource.onmessage = function (event) {
                 if (event.data === "[DONE]") {
@@ -772,6 +1063,9 @@
                             if (currentContentEl) {
                                 for (let c of fieldBuffer) {
                                     window.renderQueue.push({ type: 'char', char: c, el: currentContentEl });
+                                    if (currentField && dFieldMapping[currentField] && currentCardIndex >= 0 && currentCardIndex < 3) {
+                                        discoverGeneratedData[currentCardIndex][dFieldMapping[currentField]] += c;
+                                    }
                                 }
                             }
                             fieldBuffer = "";
@@ -781,6 +1075,9 @@
                     } else {
                         if (currentContentEl) {
                             window.renderQueue.push({ type: 'char', char: char, el: currentContentEl });
+                            if (currentField && dFieldMapping[currentField] && currentCardIndex >= 0 && currentCardIndex < 3) {
+                                discoverGeneratedData[currentCardIndex][dFieldMapping[currentField]] += char;
+                            }
                         }
                     }
                 }
@@ -794,6 +1091,9 @@
                 discoverErrorMsg.style.display = 'block';
             };
         });
+        
+        // Load initial tab logic
+        fetchSavedIdeas();
     </script>
 </body>
 
